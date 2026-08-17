@@ -78,6 +78,16 @@ in `agent/diagnostics.ts` was fixed to parse `tracert`'s stdout even when it exi
 (e.g. "Destination net unreachable"), since Node's `exec` still attaches partial stdout to a
 rejected promise and discarding it was silently losing real hop data.
 
+## Design Context
+`PRODUCT.md` and `DESIGN.md` at the project root (written via Impeccable `init`) carry the
+strategic and visual context for the UI — register (`product`), primary users (a stressed
+ISP subscriber, not a demo audience), and the real dark-glass design system already shipped
+in `ui/src/index.css` ("The Glass Instrument Panel": true black, frosted-glass cards via
+`backdrop-filter`, no drop-shadow vocabulary, mono type for every live-measured number).
+`.impeccable/design.json` is the machine-readable sidecar for Impeccable's live-variant mode.
+Read `DESIGN.md` before touching dashboard UI so new components stay on the documented system
+instead of drifting.
+
 ## Post-build fixes (found during live browser verification, not by tsc/tests)
 - `ui/src/main.tsx` never called `ReactDOM.createRoot(...).render(...)` — the app exported an
   unused `Router` component instead of mounting anything, so the page was blank. Fixed.
@@ -114,6 +124,21 @@ rejected promise and discarding it was silently losing real hop data.
   would then report false success against an unrelated pre-existing ticket/diagnostic. Fixed by
   capturing `injectedAt = Date.now()` right before the `POST /api/simulate` call and filtering
   both the diagnostic-history and open-tickets lists to entries at or after that timestamp.
+- `ui/src/index.css`: `.page-title` referenced `--font-display`, which was only ever defined
+  inside `.landing-wrapper`'s scope (`landing.css`) — outside the landing page every dashboard
+  page title silently fell back to the inherited body font (Inter) instead of the intended
+  display face. Fixed by defining `--font-display` globally in `:root`, matching the value
+  landing.css already used. Verified via computed-style inspection in a live browser: the
+  Settings page title now resolves to `BubbledotICG-FinePos, "Geist Pixel Circle", monospace`.
+- `ui/src/index.css`: the primary button's hover state and the input focus ring both drove
+  their color through `--hue-accent` (declared `0`, i.e. red), completely disconnected from
+  the actual accent color (`--c-accent`, pure white) — hovering the primary CTA or focusing a
+  form field produced an unintended warm-red tint instead of a neutral white highlight. Fixed
+  both to reference `--c-accent`'s own white directly (button hover: `hsl(0,0%,80%)`, matching
+  an already-documented `DESIGN.md` tonal-ramp step; focus ring: `hsla(0,0%,100%,0.15)`), and
+  removed the now-unused `--hue-accent` declaration. Verified by reading the parsed CSSOM rules
+  directly in a live browser (`:hover`/`:focus` don't render via computed style when the
+  automation window lacks OS focus, so the stylesheet rule text was the reliable check).
 
 ## Open investigation — `/api/simulate` sometimes doesn't fire (unresolved, stopped mid-debug)
 `npm run simulate:degradation` is intermittent on this machine: sometimes it completes cleanly

@@ -7,7 +7,6 @@
 
 :root {
   /* Palette — HSL for easy theming */
-  --hue-accent: 0;
   --c-bg:         hsl(0, 0%, 0%);         /* Pure matte black */
   --c-surface:    hsl(0, 0%, 4%);         /* Extremely dark grey for glass cards */
   --c-surface-2:  hsl(0, 0%, 8%);
@@ -40,6 +39,7 @@
   /* Typography */
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "Geist Pixel Circle", "Fira Code", monospace; /* Dot matrix retro font */
+  --font-display: "BubbledotICG-FinePos", "Geist Pixel Circle", monospace;
 
   /* Spacing scale */
   --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
@@ -371,7 +371,7 @@ input[type="number"], input[type="text"] {
 }
 input:focus {
   border-color: var(--c-accent);
-  box-shadow: 0 0 0 3px hsl(var(--hue-accent), 60%, 30% / 0.35);
+  box-shadow: 0 0 0 3px hsla(0, 0%, 100%, 0.15);
 }
 input.error {
   border-color: var(--c-critical);
@@ -399,7 +399,7 @@ input.error {
 .btn:active { transform: scale(0.97); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 .btn-primary  { background: var(--c-accent); color: hsl(220,15%,5%); }
-.btn-primary:hover:not(:disabled)  { background: hsl(var(--hue-accent), 90%, 68%); }
+.btn-primary:hover:not(:disabled)  { background: hsl(0, 0%, 80%); }
 .btn-ghost { background: var(--c-surface-2); color: var(--c-text); border: 1px solid var(--c-border); }
 .btn-ghost:hover:not(:disabled) { background: hsl(220,12%,22%); border-color: hsl(220,12%,28%); }
 .btn-sm { padding: var(--sp-1) var(--sp-3); font-size: 0.8125rem; }
