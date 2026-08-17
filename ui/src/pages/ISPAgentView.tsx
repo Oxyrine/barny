@@ -1,5 +1,19 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import type { TicketPayload, TicketSeverity } from "../../../shared/types.ts";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+};
 
 const BACKEND = "http://localhost:4000";
 
@@ -63,8 +77,8 @@ export default function ISPAgentView() {
   const minor     = queue.filter((t) => t.severity === "Minor");
 
   return (
-    <div className="stack">
-      <div className="row-between">
+    <motion.div className="stack" variants={containerVariants} initial="hidden" animate="show">
+      <motion.div className="row-between" variants={itemVariants}>
         <div>
           <h1 className="page-title">ISP Agent View</h1>
           <p className="page-subtitle">
@@ -83,11 +97,11 @@ export default function ISPAgentView() {
           </label>
           <button id="isp-refresh-btn" className="btn btn-ghost btn-sm" onClick={refresh}>↻ Refresh</button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Churn risk summary */}
       {churnRisk.length > 0 && (
-        <div className="card" style={{ borderColor: "hsl(0,40%,22%)", background: "var(--c-critical-bg)" }}>
+        <motion.div className="card" style={{ borderColor: "hsla(0, 80%, 58%, 0.3)", background: "hsla(0, 80%, 58%, 0.1)" }} variants={itemVariants}>
           <div className="row" style={{ gap: "var(--sp-3)", marginBottom: "var(--sp-3)" }}>
             <span style={{ color: "var(--c-critical)", fontSize: "1rem" }} aria-hidden="true">🔴</span>
             <h2 className="section-title" style={{ color: "var(--c-critical)" }}>
@@ -109,20 +123,20 @@ export default function ISPAgentView() {
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Stats row */}
-      <div className="grid-3">
-        <div className="card" style={{ borderColor: critical.length > 0 ? "hsl(0,40%,22%)" : undefined }}>
+      <motion.div className="grid-3" variants={itemVariants}>
+        <div className="card" style={{ borderColor: critical.length > 0 ? "hsla(0, 80%, 58%, 0.4)" : undefined }}>
           <div className="card-title">Critical</div>
-          <div className="card-value" style={{ color: critical.length > 0 ? "var(--c-critical)" : "var(--c-text-dim)" }}>
+          <div className="card-value" style={{ color: critical.length > 0 ? "var(--c-critical)" : "var(--c-text-dim)", textShadow: critical.length > 0 ? "0 0 20px hsla(0,80%,58%,0.3)" : undefined }}>
             {critical.length}
           </div>
         </div>
-        <div className="card" style={{ borderColor: degraded.length > 0 ? "hsl(40,40%,22%)" : undefined }}>
+        <div className="card" style={{ borderColor: degraded.length > 0 ? "hsla(40, 90%, 58%, 0.4)" : undefined }}>
           <div className="card-title">Degraded</div>
-          <div className="card-value" style={{ color: degraded.length > 0 ? "var(--c-degraded)" : "var(--c-text-dim)" }}>
+          <div className="card-value" style={{ color: degraded.length > 0 ? "var(--c-degraded)" : "var(--c-text-dim)", textShadow: degraded.length > 0 ? "0 0 20px hsla(40,90%,58%,0.3)" : undefined }}>
             {degraded.length}
           </div>
         </div>
@@ -130,10 +144,10 @@ export default function ISPAgentView() {
           <div className="card-title">Minor</div>
           <div className="card-value" style={{ color: "var(--c-text-dim)" }}>{minor.length}</div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Prioritized queue table */}
-      <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+      <motion.div className="card" style={{ padding: 0, overflow: "hidden" }} variants={itemVariants}>
         <div style={{ padding: "var(--sp-5) var(--sp-6) var(--sp-4)" }} className="row-between">
           <h2 className="section-title">Ticket Queue</h2>
           {error && (
@@ -198,7 +212,7 @@ export default function ISPAgentView() {
             </table>
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

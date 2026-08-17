@@ -1,6 +1,20 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { useAppContext } from "../App.tsx";
 import type { TicketPayload } from "../../../shared/types.ts";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+};
 
 const BACKEND = "http://localhost:4000";
 
@@ -127,8 +141,8 @@ export default function Tickets() {
 
   return (
     <>
-      <div className="stack">
-        <div className="row-between">
+      <motion.div className="stack" variants={containerVariants} initial="hidden" animate="show">
+        <motion.div className="row-between" variants={itemVariants}>
           <div>
             <h1 className="page-title">Tickets</h1>
             <p className="page-subtitle">{backendTickets.length} ticket(s) in the ISP backend</p>
@@ -140,20 +154,20 @@ export default function Tickets() {
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
               style={{
-                background: "var(--c-surface-2)", border: "1px solid var(--c-border)",
+                background: "hsla(0,0%,100%,0.05)", border: "1px solid var(--c-border)", backdropFilter: "blur(12px)",
                 color: "var(--c-text)", borderRadius: "var(--r-sm)", padding: "var(--sp-1) var(--sp-3)",
-                fontSize: "0.875rem",
+                fontSize: "0.875rem", outline: "none"
               }}
             >
-              <option value="all">All</option>
-              <option value="open">Open</option>
-              <option value="in-progress">In Progress</option>
-              <option value="resolved">Resolved</option>
+              <option value="all" style={{ background: "#0a0a0a" }}>All</option>
+              <option value="open" style={{ background: "#0a0a0a" }}>Open</option>
+              <option value="in-progress" style={{ background: "#0a0a0a" }}>In Progress</option>
+              <option value="resolved" style={{ background: "#0a0a0a" }}>Resolved</option>
             </select>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+        <motion.div className="card" style={{ padding: 0, overflow: "hidden" }} variants={itemVariants}>
           {backendTickets.length === 0 ? (
             <div className="empty-state">
               <span className="empty-icon" aria-hidden="true">🎫</span>
@@ -203,8 +217,8 @@ export default function Tickets() {
               </table>
             </div>
           )}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {selected && <SlideOver ticket={selected} onClose={() => setSelected(null)} />}
     </>

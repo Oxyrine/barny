@@ -42,4 +42,8 @@ export class ThresholdTracker {
 
     return { status, fired };
   }
+
+  resetCooldown(): void {
+    this.lastFiredAt = null;
+  }
 }

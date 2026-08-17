@@ -197,6 +197,9 @@ app.post("/api/simulate", (req, res) => {
   // logic lives, so injected samples get identical treatment instead of a duplicated (and
   // double-counting, since ThresholdTracker's consecutive-breach counter isn't idempotent)
   // copy of that logic here.
+  
+  threshold.resetCooldown();
+
   for (let i = 0; i < count; i++) {
     const s = { ...synthetic, timestamp: Date.now() + i };
     const state = prober.getState();

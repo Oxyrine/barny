@@ -1,9 +1,23 @@
 import { useMemo } from "react";
+import { motion } from "framer-motion";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
 } from "recharts";
 import { useAppContext } from "../App.tsx";
 import type { ProbeSample } from "../../../shared/types.ts";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+};
 
 function StatusCard({ status }: { status: string }) {
   const cfg = {
@@ -13,13 +27,13 @@ function StatusCard({ status }: { status: string }) {
   }[status] ?? { icon: "–", label: "Connecting…", className: "unknown" };
 
   return (
-    <div className="card" style={{ display: "flex", alignItems: "center", gap: "var(--sp-5)" }}>
+    <motion.div className="card" style={{ display: "flex", alignItems: "center", gap: "var(--sp-5)" }} variants={itemVariants}>
       <div
         style={{
           width: 64, height: 64, borderRadius: "50%",
           display: "grid", placeItems: "center", fontSize: "1.75rem", flexShrink: 0,
-          background: status === "good" ? "var(--c-good-bg)" : status === "degraded" ? "var(--c-degraded-bg)" : status === "critical" ? "var(--c-critical-bg)" : "var(--c-surface-2)",
-          border: `2px solid ${status === "good" ? "var(--c-good)" : status === "degraded" ? "var(--c-degraded)" : status === "critical" ? "var(--c-critical)" : "var(--c-border)"}`,
+          background: status === "good" ? "hsla(142, 70%, 50%, 0.1)" : status === "degraded" ? "hsla(40, 90%, 58%, 0.1)" : status === "critical" ? "hsla(0, 80%, 58%, 0.1)" : "hsla(0, 0%, 100%, 0.05)",
+          border: `2px solid ${status === "good" ? "hsla(142, 70%, 50%, 0.5)" : status === "degraded" ? "hsla(40, 90%, 58%, 0.5)" : status === "critical" ? "hsla(0, 80%, 58%, 0.5)" : "hsla(0, 0%, 100%, 0.2)"}`,
         }}
         role="img"
         aria-label={`Network status: ${cfg.label}`}
@@ -33,13 +47,13 @@ function StatusCard({ status }: { status: string }) {
           {cfg.label}
         </span>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 function MetricCard({ label, value, unit, skeleton }: { label: string; value: string | number | null; unit?: string; skeleton?: boolean }) {
   return (
-    <div className="card">
+    <motion.div className="card" variants={itemVariants}>
       <div className="card-title">{label}</div>
       {skeleton || value === null ? (
         <span className="skeleton" style={{ height: 36, width: "70%", marginTop: 4 }} />
@@ -49,7 +63,7 @@ function MetricCard({ label, value, unit, skeleton }: { label: string; value: st
           {unit && <span className="card-unit">{unit}</span>}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -63,7 +77,7 @@ function WifiStrip({ wifi }: { wifi: ReturnType<typeof useAppContext>["probeStat
     { label: "SNR", value: wifi.snrSource === "measured" && wifi.snr !== null ? `${wifi.snr} dB` : "n/a (Windows)" },
   ];
   return (
-    <div className="card">
+    <motion.div className="card" variants={itemVariants}>
       <div className="card-title">Wi-Fi Telemetry</div>
       <div className="telemetry-strip">
         {chips.map((c) => (
@@ -73,7 +87,7 @@ function WifiStrip({ wifi }: { wifi: ReturnType<typeof useAppContext>["probeStat
           </div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -109,8 +123,8 @@ export default function Dashboard() {
   const skeleton = !connected && !probeState;
 
   return (
-    <div className="stack">
-      <div className="row-between">
+    <motion.div className="stack" variants={containerVariants} initial="hidden" animate="show">
+      <motion.div className="row-between" variants={itemVariants}>
         <h1 className="page-title">
           Dashboard
           <span className="page-subtitle"> — live network health</span>
@@ -120,12 +134,12 @@ export default function Dashboard() {
             ⚙ {last.cpuPercent.toFixed(1)}% CPU
           </span>
         )}
-      </div>
+      </motion.div>
 
       {/* Status + quick metrics */}
       <StatusCard status={probeState?.status ?? (connected ? "good" : "unknown")} />
 
-      <div className="grid-4">
+      <motion.div className="grid-4" variants={itemVariants}>
         <MetricCard
           label="Latency"
           value={last?.latencyMs !== undefined && last.latencyMs !== null ? Math.round(last.latencyMs) : null}
@@ -148,13 +162,13 @@ export default function Dashboard() {
           value={last ? (last.httpOk ? "OK" : "Fail") : null}
           skeleton={skeleton}
         />
-      </div>
+      </motion.div>
 
       {/* Wi-Fi telemetry strip */}
       {probeState?.wifi && <WifiStrip wifi={probeState.wifi} />}
 
       {/* Latency + DNS chart */}
-      <div className="card">
+      <motion.div className="card" variants={itemVariants}>
         <div className="section-header">
           <h2 className="section-title">Latency &amp; DNS — last {CHART_WINDOW} samples</h2>
         </div>
@@ -179,18 +193,18 @@ export default function Dashboard() {
             </LineChart>
           </ResponsiveContainer>
         )}
-      </div>
+      </motion.div>
 
       {!connected && (
-        <div className="card" style={{ borderColor: "var(--c-critical)", background: "var(--c-critical-bg)" }}>
+        <motion.div className="card" style={{ borderColor: "var(--c-critical)", background: "hsla(0, 80%, 58%, 0.1)" }} variants={itemVariants}>
           <div className="row" style={{ gap: "var(--sp-3)", color: "var(--c-critical)" }}>
             <span aria-hidden="true">✕</span>
             <span>
               <strong>Agent disconnected</strong> — make sure <code>npm run dev:agent</code> is running on port 4100.
             </span>
           </div>
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

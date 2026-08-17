@@ -11,22 +11,36 @@ export function speedtestRouter(): Router {
 
   router.get("/speedtest/down", (req, res) => {
     const bytes = Math.min(Number(req.query.bytes) || 8_000_000, MAX_BYTES);
+    const targetMbps = Number(req.query.mbps) || 12; // Simulate a 12 Mbps connection by default
+    const bytesPerSec = (targetMbps * 1_000_000) / 8;
+    
     res.setHeader("Content-Type", "application/octet-stream");
     res.setHeader("Content-Length", String(bytes));
     const chunk = randomBytes(Math.min(CHUNK_SIZE, bytes));
 
     let sent = 0;
     const writeMore = () => {
-      while (sent < bytes) {
-        const remaining = bytes - sent;
-        const toSend = remaining < chunk.length ? chunk.subarray(0, remaining) : chunk;
-        sent += toSend.length;
-        if (!res.write(toSend)) {
-          res.once("drain", writeMore);
-          return;
-        }
+      if (sent >= bytes) {
+        res.end();
+        return;
       }
-      res.end();
+      
+      const remaining = bytes - sent;
+      const toSend = remaining < chunk.length ? chunk.subarray(0, remaining) : chunk;
+      
+      const startWrite = performance.now();
+      const canWriteMore = res.write(toSend);
+      sent += toSend.length;
+      
+      const expectedMs = (toSend.length / bytesPerSec) * 1000;
+      const elapsedMs = performance.now() - startWrite;
+      const delayMs = Math.max(0, expectedMs - elapsedMs);
+
+      if (canWriteMore) {
+        setTimeout(writeMore, delayMs);
+      } else {
+        res.once("drain", () => setTimeout(writeMore, delayMs));
+      }
     };
     writeMore();
   });
@@ -34,11 +48,20 @@ export function speedtestRouter(): Router {
   router.post("/speedtest/up", (req, res) => {
     let bytes = 0;
     const start = Date.now();
+    const targetMbps = Number(req.query.mbps) || 12;
+    
     req.on("data", (chunk: Buffer) => {
       bytes += chunk.length;
     });
+    
     req.on("end", () => {
-      res.json({ bytesReceived: bytes, elapsedMs: Date.now() - start });
+      const elapsedMs = Date.now() - start;
+      const expectedMs = (bytes * 8 * 1000) / (targetMbps * 1_000_000);
+      const delayMs = Math.max(0, expectedMs - elapsedMs);
+      
+      setTimeout(() => {
+        res.json({ bytesReceived: bytes, elapsedMs: Date.now() - start });
+      }, delayMs);
     });
   });
 

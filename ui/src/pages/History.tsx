@@ -1,9 +1,23 @@
 import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
 import { useAppContext } from "../App.tsx";
 import type { DiagnosticResult } from "../../../shared/types.ts";
 
 type SortKey = "timestamp" | "downstreamMbps" | "upstreamMbps" | "grade";
 type SortDir = "asc" | "desc";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+};
 
 function GradeBadge({ grade }: { grade: string }) {
   return (
@@ -55,8 +69,8 @@ export default function History() {
   }, [diagnostics, sortKey, sortDir, filterGrade]);
 
   return (
-    <div className="stack">
-      <div className="row-between">
+    <motion.div className="stack" variants={containerVariants} initial="hidden" animate="show">
+      <motion.div className="row-between" variants={itemVariants}>
         <div>
           <h1 className="page-title">History</h1>
           <p className="page-subtitle">{diagnostics.length} diagnostic run(s) recorded this session</p>
@@ -68,18 +82,18 @@ export default function History() {
             value={filterGrade}
             onChange={(e) => setFilterGrade(e.target.value)}
             style={{
-              background: "var(--c-surface-2)", border: "1px solid var(--c-border)",
+              background: "hsla(0,0%,100%,0.05)", border: "1px solid var(--c-border)", backdropFilter: "blur(12px)",
               color: "var(--c-text)", borderRadius: "var(--r-sm)", padding: "var(--sp-1) var(--sp-3)",
-              fontSize: "0.875rem",
+              fontSize: "0.875rem", outline: "none"
             }}
           >
-            <option value="all">All</option>
-            {["A","B","C","D","F"].map((g) => <option key={g} value={g}>{g}</option>)}
+            <option value="all" style={{ background: "#0a0a0a" }}>All</option>
+            {["A","B","C","D","F"].map((g) => <option key={g} value={g} style={{ background: "#0a0a0a" }}>{g}</option>)}
           </select>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+      <motion.div className="card" style={{ padding: 0, overflow: "hidden" }} variants={itemVariants}>
         {sorted.length === 0 ? (
           <div className="empty-state">
             <span className="empty-icon" aria-hidden="true">📋</span>
@@ -130,7 +144,7 @@ export default function History() {
             </table>
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
