@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { AppConfig } from "../../../../shared/types.ts";
+import type { AppConfig } from "../../../shared/types.ts";
 
 interface Toast { id: number; type: "success" | "error"; message: string; }
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAppContext } from "../App.tsx";
-import type { TicketPayload } from "../../../../shared/types.ts";
+import type { TicketPayload } from "../../../shared/types.ts";
 
 const BACKEND = "http://localhost:4000";
 

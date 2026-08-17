@@ -55,7 +55,7 @@ const RULES: Array<{
       "Move your device closer to the router, or consider a Wi-Fi extender / mesh node " +
       "to improve coverage in this area.",
     match: ({ wifi }) => {
-      return wifi?.rssi !== null && wifi.rssi !== undefined && wifi.rssi < -70;
+      return wifi != null && wifi.rssi != null && wifi.rssi < -70;
     },
   },
   {

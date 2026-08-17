@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useAppContext } from "../App.tsx";
-import type { DiagnosticResult } from "../../../../shared/types.ts";
+import type { DiagnosticResult } from "../../../shared/types.ts";
 
 type SortKey = "timestamp" | "downstreamMbps" | "upstreamMbps" | "grade";
 type SortDir = "asc" | "desc";

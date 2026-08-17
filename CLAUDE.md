@@ -53,8 +53,10 @@ data over SSE; ticket submission from agent to backend is REST.
   probe → diagnostic → ticket loop end to end
 
 ## Build status
-All phases P0–P10 done and pushed to `main`. 75 `node --test` cases pass, `tsc --noEmit` clean.
-UI builds clean with Vite (619 modules).
+All phases P0–P10 done and pushed to `main`. 84 `node --test` cases pass, `tsc --noEmit` clean.
+UI builds clean with Vite (619 modules). Full stack (backend :4000, agent :4100, Vite :5173)
+verified live in a real browser — Dashboard/Settings/History/Tickets/ISP Agent View all render
+real data with zero console errors.
 
 Phases completed:
 - P0: Scaffold (package.json, tsconfig, CLAUDE.md, git)
@@ -75,4 +77,24 @@ legitimately come back empty or partial — that's the real network, not a bug. 
 in `agent/diagnostics.ts` was fixed to parse `tracert`'s stdout even when it exits non-zero
 (e.g. "Destination net unreachable"), since Node's `exec` still attaches partial stdout to a
 rejected promise and discarding it was silently losing real hop data.
+
+## Post-build fixes (found during live browser verification, not by tsc/tests)
+- `ui/src/main.tsx` never called `ReactDOM.createRoot(...).render(...)` — the app exported an
+  unused `Router` component instead of mounting anything, so the page was blank. Fixed.
+- All 5 page files under `ui/src/pages/` imported `shared/types.ts` with one `../` too many.
+  Fixed.
+- `backend/server.ts` set no CORS headers, so `Tickets.tsx`/`ISPAgentView.tsx` (which fetch
+  the backend directly cross-origin) were silently blocked by the browser in both Vite dev and
+  the packaged build — curl and Node-side tests never catch this since neither enforces CORS.
+  Added a small manual CORS middleware (matches the existing pattern already used on the
+  agent's SSE route) rather than a new dependency. Covered by a test asserting the header.
+- `agent/selfheal.ts`'s `relocate` rule mixed `wifi?.rssi` with a bare `wifi.rssi` on the next
+  clause — threw `TypeError` at runtime whenever wifi telemetry was null. Fixed to a single
+  `wifi != null && wifi.rssi != null` check (this is also what `tsc --noEmit` was flagging).
+- `agent/server.ts`: the "sample" SSE handler broadcast the probe state *before* recomputing
+  `status` from the threshold tracker, so every frame was one sample stale. Also, `/api/simulate`
+  duplicated the same threshold/broadcast logic inline and then re-emitted "sample", double-
+  counting `ThresholdTracker`'s consecutive-breach counter. Both fixed by computing status
+  before broadcasting once, and having `/api/simulate` push a sample and emit "sample" through
+  the single canonical handler instead of re-implementing it.
 

@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync, writeFileSync } from "node:fs";
 import type { Response } from "express";
-import type { AppConfig, ProbeSample, ProbeState } from "../shared/types.ts";
+import type { AppConfig, ProbeSample, ProbeState, DiagnosticResult } from "../shared/types.ts";
 import { Prober } from "./probe.ts";
 import { ThresholdTracker } from "./threshold.ts";
 import { runDiagnostics } from "./diagnostics.ts";
@@ -23,7 +23,7 @@ function loadConfig(): AppConfig {
 let config = loadConfig();
 const prober = new Prober(config);
 const threshold = new ThresholdTracker();
-const diagnosticHistory: ReturnType<typeof runDiagnostics> extends Promise<infer T> ? T[] : never[] = [] as any;
+const diagnosticHistory: DiagnosticResult[] = [];
 
 // ── SSE client registry ──────────────────────────────────────────────────────
 const sseClients = new Set<Response>();
@@ -39,20 +39,20 @@ function broadcast(event: string, data: unknown): void {
 let runningDiag = false;
 
 prober.on("sample", async (state: ProbeState) => {
-  broadcast("probe", state);
-
+  // status must be current before this sample is broadcast — computing it after would send
+  // every SSE frame one sample stale, leaving the dashboard's status indicator a tick behind.
   const { status, fired } = threshold.record(state.history, config, Date.now());
-  (state as any).status = status;
-  prober["state"].status = status;
+  state.status = status;
   prober.setSuspect(status !== "good");
+  broadcast("probe", state);
 
   if (fired && !runningDiag) {
     runningDiag = true;
     console.log("[agent] threshold fired — running diagnostics…");
     try {
       const diag = await runDiagnostics(BACKEND_URL);
-      (diagnosticHistory as any[]).unshift(diag);
-      if ((diagnosticHistory as any[]).length > HISTORY_LIMIT) (diagnosticHistory as any[]).pop();
+      diagnosticHistory.unshift(diag);
+      if (diagnosticHistory.length > HISTORY_LIMIT) diagnosticHistory.pop();
       broadcast("diagnostic", diag);
       console.log(`[agent] diag done — down ${diag.downstreamMbps.toFixed(1)} Mbps, up ${diag.upstreamMbps.toFixed(1)} Mbps, bufferbloat ${diag.bufferbloat.grade}`);
 
@@ -158,20 +158,17 @@ app.post("/api/simulate", (req, res) => {
     cpuPercent: 2,
   };
 
-  // Inject directly into prober state so the threshold tracker sees them
+  // Inject directly into prober state, then emit through the same "sample" event the real
+  // probe loop uses — that handler is the single place threshold/status/broadcast/diagnostics
+  // logic lives, so injected samples get identical treatment instead of a duplicated (and
+  // double-counting, since ThresholdTracker's consecutive-breach counter isn't idempotent)
+  // copy of that logic here.
   for (let i = 0; i < count; i++) {
     const s = { ...synthetic, timestamp: Date.now() + i };
-    (prober.getState().history as ProbeSample[]).push(s);
-    (prober.getState() as any).lastSample = s;
-    broadcast("probe", prober.getState());
-
-    const { status, fired } = threshold.record(prober.getState().history, config, Date.now());
-    prober["state"].status = status;
-    prober.setSuspect(true);
-    if (fired && !runningDiag) {
-      // Kick off async pipeline — deliberate fire-and-forget so simulate endpoint responds fast
-      prober.emit("sample", prober.getState());
-    }
+    const state = prober.getState();
+    state.history.push(s);
+    state.lastSample = s;
+    prober.emit("sample", state);
   }
 
   res.json({ injected: count, latencyMs, packetLoss });

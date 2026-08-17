@@ -1,4 +1,7 @@
+import React from "react";
+import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import "./index.css";
 import App from "./App.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import History from "./pages/History.tsx";
@@ -20,6 +23,8 @@ const router = createBrowserRouter([
   },
 ]);
 
-export default function Router() {
-  return <RouterProvider router={router} />;
-}
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <RouterProvider router={router} />
+  </React.StrictMode>,
+);

@@ -5,7 +5,7 @@
     "packetLossPct": 5,
     "dnsMs": 300
   },
-  "probeIntervalIdleMs": 15000,
-  "probeIntervalSuspectMs": 5000,
+  "probeIntervalIdleMs": 1000,
+  "probeIntervalSuspectMs": 1000,
   "triggerCooldownMs": 60000
 }

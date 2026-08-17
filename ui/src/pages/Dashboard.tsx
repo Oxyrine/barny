@@ -3,7 +3,7 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
 } from "recharts";
 import { useAppContext } from "../App.tsx";
-import type { ProbeSample } from "../../../../shared/types.ts";
+import type { ProbeSample } from "../../../shared/types.ts";
 
 function StatusCard({ status }: { status: string }) {
   const cfg = {

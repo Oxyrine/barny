@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { TicketPayload, TicketSeverity } from "../../../../shared/types.ts";
+import type { TicketPayload, TicketSeverity } from "../../../shared/types.ts";
 
 const BACKEND = "http://localhost:4000";
 
