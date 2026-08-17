@@ -6,8 +6,9 @@ import { openDb } from "../db.ts";
 import { ZendeskAdapter } from "../adapters/zendesk.ts";
 
 function startServer() {
-  const adapter = new ZendeskAdapter(openDb(":memory:"));
-  const server = createApp(adapter).listen(0);
+  const db = openDb(":memory:");
+  const adapter = new ZendeskAdapter(db);
+  const server = createApp(adapter, db).listen(0);
   const { port } = server.address() as AddressInfo;
   return { server, base: `http://127.0.0.1:${port}` };
 }
