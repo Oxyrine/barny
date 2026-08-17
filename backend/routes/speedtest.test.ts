@@ -27,7 +27,10 @@ test("GET /speedtest/down streams exactly the requested byte count", async () =>
 test("GET /speedtest/down caps requested size at the server max", { timeout: 30_000 }, async () => {
   const { server, base } = startServer();
   try {
-    const res = await fetch(`${base}/speedtest/down?bytes=999999999999`);
+    // mbps is high enough to make the route's throttle-pacing negligible — this test exercises
+    // the byte-cap logic, not realistic bandwidth simulation (which defaults to 12 Mbps and would
+    // take ~33s to pace out the full 50MB cap, exceeding this test's timeout).
+    const res = await fetch(`${base}/speedtest/down?bytes=999999999999&mbps=100000`);
     const buf = await res.arrayBuffer();
     assert.equal(buf.byteLength, 50_000_000);
   } finally {

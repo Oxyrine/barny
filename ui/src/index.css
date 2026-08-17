@@ -305,6 +305,14 @@ body {
   .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
   main { padding: var(--sp-4); }
   .nav { padding: 0 var(--sp-4); width: calc(100% - var(--sp-4)); }
+  /* Keep brand and status visible; let the link list scroll horizontally rather than
+     overflow the viewport or get silently clipped. */
+  .nav-links {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .nav-links::-webkit-scrollbar { display: none; }
 }
 
 /* ── Stack / flex helpers ───────────────────────────────────────────────── */
@@ -340,6 +348,17 @@ thead th {
   user-select: none;
 }
 thead th:hover { color: var(--c-text); }
+.th-sort-btn {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+.th-sort-btn:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
 tbody tr {
   transition: all var(--t-fast);
 }

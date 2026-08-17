@@ -104,17 +104,25 @@ export default function History() {
             <table aria-label="Diagnostic history">
               <thead>
                 <tr>
-                  <th onClick={() => toggleSort("timestamp")} scope="col">
-                    Time <SortIcon active={sortKey === "timestamp"} dir={sortDir} />
+                  <th scope="col" aria-sort={sortKey === "timestamp" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
+                    <button type="button" className="th-sort-btn" onClick={() => toggleSort("timestamp")}>
+                      Time <SortIcon active={sortKey === "timestamp"} dir={sortDir} />
+                    </button>
                   </th>
-                  <th onClick={() => toggleSort("downstreamMbps")} scope="col">
-                    Download <SortIcon active={sortKey === "downstreamMbps"} dir={sortDir} />
+                  <th scope="col" aria-sort={sortKey === "downstreamMbps" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
+                    <button type="button" className="th-sort-btn" onClick={() => toggleSort("downstreamMbps")}>
+                      Download <SortIcon active={sortKey === "downstreamMbps"} dir={sortDir} />
+                    </button>
                   </th>
-                  <th onClick={() => toggleSort("upstreamMbps")} scope="col">
-                    Upload <SortIcon active={sortKey === "upstreamMbps"} dir={sortDir} />
+                  <th scope="col" aria-sort={sortKey === "upstreamMbps" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
+                    <button type="button" className="th-sort-btn" onClick={() => toggleSort("upstreamMbps")}>
+                      Upload <SortIcon active={sortKey === "upstreamMbps"} dir={sortDir} />
+                    </button>
                   </th>
-                  <th onClick={() => toggleSort("grade")} scope="col">
-                    Bufferbloat <SortIcon active={sortKey === "grade"} dir={sortDir} />
+                  <th scope="col" aria-sort={sortKey === "grade" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
+                    <button type="button" className="th-sort-btn" onClick={() => toggleSort("grade")}>
+                      Bufferbloat <SortIcon active={sortKey === "grade"} dir={sortDir} />
+                    </button>
                   </th>
                   <th scope="col">Idle Latency</th>
                   <th scope="col">Loaded Latency</th>
