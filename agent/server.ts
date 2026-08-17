@@ -31,7 +31,17 @@ const sseClients = new Set<Response>();
 function broadcast(event: string, data: unknown): void {
   const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
   for (const res of sseClients) {
-    res.write(payload);
+    try {
+      res.write(payload, (err) => {
+        if (err) {
+          console.warn("[agent] SSE write callback error, cleaning up client:", err.message);
+          sseClients.delete(res);
+        }
+      });
+    } catch (err) {
+      console.warn("[agent] SSE write synchronous error, cleaning up client:", (err as Error).message);
+      sseClients.delete(res);
+    }
   }
 }
 
@@ -106,6 +116,11 @@ app.get("/events", (req, res) => {
   // Send a heartbeat immediately so the browser EventSource knows the connection is live
   res.write(": heartbeat\n\n");
   sseClients.add(res);
+
+  res.on("error", (err) => {
+    console.warn("[agent] SSE connection error event:", err.message);
+    sseClients.delete(res);
+  });
 
   req.on("close", () => {
     sseClients.delete(res);
