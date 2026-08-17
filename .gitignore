@@ -5,3 +5,4 @@ ui/dist/
 *.db-journal
 .env
 .env.local
+.wifi-salt
