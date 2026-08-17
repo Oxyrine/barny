@@ -45,6 +45,7 @@ export default function App() {
         <header className="header" style={{ marginTop: 'var(--sp-4)', maxWidth: '1400px', width: '100%', margin: 'var(--sp-4) auto 0' }}>
 
           <nav className="nav-pill desktop-only">
+            <NavLink to="/" end>Home</NavLink>
             <NavLink to="/dashboard" end>Dashboard</NavLink>
             <NavLink to="/dashboard/tickets">Tickets</NavLink>
             <NavLink to="/dashboard/history">History</NavLink>
