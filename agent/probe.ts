@@ -12,7 +12,7 @@ const HTTP_PROBE_URL = "http://clients3.google.com/generate_204";
 const CONNECT_TIMEOUT_MS = 3000;
 const HISTORY_LIMIT = 500;
 
-async function measureLatency(): Promise<{ latencyMs: number | null; packetLoss: boolean }> {
+export async function measureLatency(): Promise<{ latencyMs: number | null; packetLoss: boolean }> {
   const start = performance.now();
   return new Promise((resolve) => {
     const socket = net.connect({ host: PROBE_HOST, port: PROBE_PORT, timeout: CONNECT_TIMEOUT_MS });
