@@ -53,12 +53,21 @@ data over SSE; ticket submission from agent to backend is REST.
   probe → diagnostic → ticket loop end to end
 
 ## Build status
-Phases P0–P4 done (scaffold, telemetry/anonymization, health probe + threshold, mock ISP
-backend, diagnostic suite) — all committed and pushed to `main`. 35 `node --test` cases pass,
-`tsc --noEmit` clean. Everything verified against real hardware, not just unit fixtures: real
-RSSI/SNR/band/channel off this machine's Wi-Fi adapter, a real 60s probe run, real curl round
-trips against a live backend, and a full diagnostic run (throughput/bufferbloat/traceroute)
-against the live mock backend and real network.
+All phases P0–P10 done and pushed to `main`. 75 `node --test` cases pass, `tsc --noEmit` clean.
+UI builds clean with Vite (619 modules).
+
+Phases completed:
+- P0: Scaffold (package.json, tsconfig, CLAUDE.md, git)
+- P1: Wi-Fi telemetry + anonymization (wifi.ts, anonymize.ts — real netsh data)
+- P2: Health probe + threshold trigger (probe.ts, threshold.ts)
+- P3: Mock ISP backend (db.ts, adapters, routes/tickets, routes/speedtest)
+- P4: Diagnostic suite (diagnostics.ts — throughput, bufferbloat, traceroute)
+- P5: Self-heal rules + summary templates + ticket assembler (selfheal.ts, summary.ts, ticket.ts)
+- P6: Agent server — Express :4100 with SSE + full REST API (agent/server.ts)
+- P7: Vite+React dashboard — Dashboard, History, Settings, Tickets, ISP Agent View pages
+- P8: Demo simulation script (scripts/simulate-degradation.ts)
+- P9: ISP triage, churn risk, agent queue endpoint (backend/triage.ts, churn.ts, routes/agentview.ts)
+- P10: Electron wrapper (electron/main.js — spawns agent+backend, opens BrowserWindow on :4100)
 
 Traceroute note: this machine is on a flaky phone hotspot whose carrier NAT sometimes drops
 or rate-limits ICMP TTL-exceeded probes entirely, so `traceroute` in the payload can
@@ -67,6 +76,3 @@ in `agent/diagnostics.ts` was fixed to parse `tracert`'s stdout even when it exi
 (e.g. "Destination net unreachable"), since Node's `exec` still attaches partial stdout to a
 rejected promise and discarding it was silently losing real hop data.
 
-Not yet built: self-heal gate + plain-English summary + ticket builder (P5), the agent's own
-SSE/HTTP server (P6), the dashboard UI (P7), demo simulation script (P8), ISP agent view with
-triage/churn-risk (P9), optional Electron wrapper (P10).

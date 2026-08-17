@@ -10,7 +10,9 @@
     "build:ui": "vite build ui --config ui/vite.config.ts",
     "test": "node --test agent/**/*.test.ts backend/**/*.test.ts",
     "typecheck": "tsc --noEmit",
-    "simulate:degradation": "node scripts/simulate-degradation.ts"
+    "simulate:degradation": "node scripts/simulate-degradation.ts",
+    "electron": "node electron/main.js",
+    "electron:dev": "node electron/main.js --dev"
   },
   "dependencies": {
     "express": "^4.21.2",
@@ -26,6 +28,8 @@
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
     "typescript": "^5.7.2",
-    "vite": "^6.0.5"
-  }
+    "vite": "^6.0.5",
+    "electron": "^33.0.0"
+  },
+  "main": "electron/main.js"
 }
