@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-17T00:00:00.000Z",
+  "title": "Design System: NetWatch",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Signal White",
+        "canonical": "hsl(0, 0%, 100%)",
+        "tonalRamp": ["hsl(0,0%,15%)", "hsl(0,0%,25%)", "hsl(0,0%,35%)", "hsl(0,0%,45%)", "hsl(0,0%,55%)", "hsl(0,0%,65%)", "hsl(0,0%,80%)", "hsl(0,0%,95%)"]
+      },
+      "bg": {
+        "role": "neutral",
+        "displayName": "Void",
+        "canonical": "hsl(0, 0%, 0%)",
+        "tonalRamp": ["hsl(0,0%,0%)", "hsl(0,0%,4%)", "hsl(0,0%,8%)", "hsl(0,0%,12%)", "hsl(0,0%,20%)", "hsl(0,0%,35%)", "hsl(0,0%,55%)", "hsl(0,0%,80%)"]
+      },
+      "good": {
+        "role": "status",
+        "displayName": "Clear Green",
+        "canonical": "hsl(142, 70%, 50%)",
+        "tonalRamp": ["hsl(142,70%,15%)", "hsl(142,70%,25%)", "hsl(142,70%,35%)", "hsl(142,70%,45%)", "hsl(142,70%,55%)", "hsl(142,70%,65%)", "hsl(142,70%,80%)", "hsl(142,70%,95%)"]
+      },
+      "degraded": {
+        "role": "status",
+        "displayName": "Caution Amber",
+        "canonical": "hsl(40, 90%, 58%)",
+        "tonalRamp": ["hsl(40,90%,15%)", "hsl(40,90%,25%)", "hsl(40,90%,35%)", "hsl(40,90%,45%)", "hsl(40,90%,55%)", "hsl(40,90%,65%)", "hsl(40,90%,80%)", "hsl(40,90%,95%)"]
+      },
+      "critical": {
+        "role": "status",
+        "displayName": "Alert Red",
+        "canonical": "hsl(0, 80%, 58%)",
+        "tonalRamp": ["hsl(0,80%,15%)", "hsl(0,80%,25%)", "hsl(0,80%,35%)", "hsl(0,80%,45%)", "hsl(0,80%,55%)", "hsl(0,80%,65%)", "hsl(0,80%,80%)", "hsl(0,80%,95%)"]
+      }
+    },
+    "typographyMeta": {
+      "body": { "displayName": "Body / Inter", "purpose": "All UI text, labels, nav, body copy, button text." },
+      "label": { "displayName": "Label / Card Title", "purpose": "Small-caps uppercase labels above metric cards and table columns." },
+      "mono": { "displayName": "Readout Mono", "purpose": "Any number sourced from a live measurement: latency, throughput, RSSI, packet loss, grades." }
+    },
+    "shadows": [
+      { "name": "card-elevation", "value": "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 1px hsla(0,0%,100%,0.1)", "purpose": "Default glass-card treatment; paired with 24px backdrop blur." },
+      { "name": "nav-elevation", "value": "0 4px 14px rgba(0,0,0,0.5)", "purpose": "Sticky pill nav, paired with 24px backdrop blur." },
+      { "name": "badge-glow", "value": "0 0 12px hsla(var(--status-hue), 70%, 50%, 0.1)", "purpose": "Status badges glow in their own hue instead of casting a shadow." }
+    ],
+    "motion": [
+      { "name": "t-fast", "value": "120ms ease", "purpose": "Hover/active micro-interactions (buttons, links, badges)." },
+      { "name": "t-med", "value": "220ms ease", "purpose": "Card hover, status dot color change, toast/slideover entrances." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "600px" },
+      { "name": "md", "value": "900px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main call-to-action. White fill, near-black text, scales down on press.",
+      "html": "<button class=\"ds-btn-primary\">Save changes</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 8px 20px; border-radius: 6px; border: none; background: hsl(0,0%,100%); color: hsl(220,15%,5%); font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: background 120ms ease, transform 120ms ease; } .ds-btn-primary:hover { background: hsl(0,90%,68%); } .ds-btn-primary:active { transform: scale(0.97); } .ds-btn-primary:focus-visible { outline: 2px solid hsl(0,0%,100%); outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary action. Dark surface fill with a hairline border.",
+      "html": "<button class=\"ds-btn-ghost\">Cancel</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; gap: 8px; padding: 8px 20px; border-radius: 6px; background: hsl(0,0%,8%); color: hsl(0,0%,100%); border: 1px solid hsla(0,0%,100%,0.1); font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: background 120ms ease, border-color 120ms ease; } .ds-btn-ghost:hover { background: hsl(220,12%,22%); border-color: hsl(220,12%,28%); } .ds-btn-ghost:focus-visible { outline: 2px solid hsl(0,0%,100%); outline-offset: 2px; }"
+    },
+    {
+      "name": "Metric Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Frosted glass card showing one measured value, e.g. latency or throughput.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-title\">Latency</div><div class=\"ds-card-value\">42<span class=\"ds-card-unit\">ms</span></div></div>",
+      "css": ".ds-card { background: hsla(0,0%,100%,0.03); backdrop-filter: blur(24px); border: 1px solid hsla(0,0%,100%,0.1); border-radius: 24px; padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 1px hsla(0,0%,100%,0.1); transition: background 220ms ease, border-color 220ms ease; } .ds-card:hover { border-color: hsla(0,0%,100%,0.18); background: hsla(0,0%,100%,0.05); } .ds-card-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: hsl(0,0%,55%); margin-bottom: 16px; } .ds-card-value { font-family: 'Geist Pixel Circle', 'Fira Code', monospace; font-size: 2.2rem; font-weight: 500; letter-spacing: -0.04em; color: hsl(0,0%,100%); text-shadow: 0 0 20px hsla(0,0%,100%,0.2); } .ds-card-unit { font-size: 0.875rem; color: hsl(0,0%,55%); font-weight: 400; margin-left: 8px; }"
+    },
+    {
+      "name": "Status Badge (Good)",
+      "kind": "chip",
+      "refersTo": "status-badge-good",
+      "description": "Health/severity indicator. Always icon + label, never color alone.",
+      "html": "<span class=\"ds-badge ds-badge-good\">&#9679; Good</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 999px; font-size: 0.8125rem; font-weight: 500; border: 1px solid; backdrop-filter: blur(12px); } .ds-badge-good { background: hsla(142,70%,50%,0.1); color: hsl(142,70%,50%); border-color: hsla(142,70%,50%,0.2); box-shadow: 0 0 12px hsla(142,70%,50%,0.1); }"
+    },
+    {
+      "name": "Status Badge (Critical)",
+      "kind": "chip",
+      "refersTo": "status-badge-critical",
+      "description": "Critical health/severity indicator, still calm, no flashing or extra chrome.",
+      "html": "<span class=\"ds-badge ds-badge-critical\">&#9679; Critical</span>",
+      "css": ".ds-badge-critical { background: hsla(0,80%,58%,0.1); color: hsl(0,80%,58%); border-color: hsla(0,80%,58%,0.2); box-shadow: 0 0 12px hsla(0,80%,58%,0.1); display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 999px; font-size: 0.8125rem; font-weight: 500; border: 1px solid; backdrop-filter: blur(12px); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Numeric threshold/config field. Mono type since values are almost always numbers.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-label\">Latency threshold (ms)</label><input class=\"ds-input\" type=\"number\" value=\"150\" /></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 8px; } .ds-label { font-size: 0.8125rem; font-weight: 500; color: hsl(0,0%,55%); } .ds-input { background: hsl(0,0%,8%); border: 1px solid hsla(0,0%,100%,0.1); border-radius: 6px; color: hsl(0,0%,100%); padding: 8px 12px; font-family: 'Geist Pixel Circle', 'Fira Code', monospace; font-size: 0.875rem; width: 100%; outline: none; transition: border-color 120ms ease, box-shadow 120ms ease; } .ds-input:focus { border-color: hsl(0,0%,100%); box-shadow: 0 0 0 3px hsla(0,60%,30%,0.35); }"
+    },
+    {
+      "name": "Grade Badge",
+      "kind": "chip",
+      "refersTo": "grade-badge",
+      "description": "Bufferbloat A-F grade indicator, one continuous hue sweep from good to critical.",
+      "html": "<span class=\"ds-grade ds-grade-a\">A</span>",
+      "css": ".ds-grade { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-weight: 500; font-size: 0.875rem; font-family: 'Geist Pixel Circle', 'Fira Code', monospace; border: 1px solid; backdrop-filter: blur(8px); } .ds-grade-a { background: hsla(142,70%,50%,0.1); color: hsl(142,70%,50%); border-color: hsla(142,70%,50%,0.2); }"
+    },
+    {
+      "name": "Pill Navigation",
+      "kind": "nav",
+      "refersTo": "nav-pill",
+      "description": "Sticky floating pill nav, the primary chrome element on every page.",
+      "html": "<nav class=\"ds-nav\"><span class=\"ds-nav-brand\">NetWatch</span><a class=\"ds-nav-link ds-nav-link-active\" href=\"#\">Dashboard</a><a class=\"ds-nav-link\" href=\"#\">History</a><span class=\"ds-nav-dot\"></span></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 32px; height: 58px; padding: 0 24px; border-radius: 999px; background: hsla(0,0%,100%,0.05); backdrop-filter: blur(24px); border: 1px solid hsla(0,0%,100%,0.1); box-shadow: 0 4px 14px rgba(0,0,0,0.5); } .ds-nav-brand { font-weight: 700; font-size: 1rem; letter-spacing: -0.02em; color: hsl(0,0%,100%); } .ds-nav-link { padding: 8px 12px; border-radius: 6px; color: hsl(0,0%,55%); text-decoration: none; font-size: 0.875rem; font-weight: 500; transition: color 120ms ease, background 120ms ease; } .ds-nav-link:hover { color: hsl(0,0%,100%); background: hsla(0,0%,100%,0.08); } .ds-nav-link-active { color: hsl(0,0%,100%); background: hsla(0,0%,100%,0.15); box-shadow: inset 0 1px 1px hsla(0,0%,100%,0.2); } .ds-nav-dot { width: 7px; height: 7px; border-radius: 50%; margin-left: auto; background: hsl(142,70%,50%); box-shadow: 0 0 8px hsl(142,70%,50%); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Glass Instrument Panel",
+    "overview": "NetWatch reads a home network's health the way a cockpit instrument panel reads altitude and airspeed: precise glowing readouts on true black glass, calm at rest, and only ever loud when something genuinely needs attention. The surface is matte black, not navy or charcoal, every card is frosted glass floating over it with a soft inner highlight, and color is rationed: white and gray carry the interface, and the only saturated colors on screen are the three status hues (good, degraded, critical) plus a five-step bufferbloat grade scale, both of which are functional signals, never decoration. This system explicitly rejects a chrome-and-shadow \"dashboard software\" look; there is no drop-shadow vocabulary here, depth comes from blur and translucency, not elevation stacking. It also rejects alarm-red panic UI, a Critical status still renders as a quiet glowing pill with a label, not a flashing banner, because the product's whole premise is staying calm and precise while explaining a real problem to a stressed, non-technical subscriber.",
+    "keyCharacteristics": [
+      "True black background, never navy or charcoal",
+      "Frosted glass cards (blur, not shadow) as the primary surface language",
+      "One neutral accent (white) plus three status hues, nothing else saturated",
+      "Monospace numerals for anything measured; Inter for everything read as language",
+      "Status is always icon/label + color, never color alone"
+    ],
+    "rules": [
+      { "name": "The One-Accent Rule", "body": "White is the only non-functional color in the entire system. If a new element needs visual weight, reach for opacity, blur, or size before reaching for a new hue.", "section": "colors" },
+      { "name": "The Color-Plus-Label Rule", "body": "No status is ever conveyed by color alone. Every status badge, nav dot, and metric pairs its color with an icon or text label.", "section": "colors" },
+      { "name": "The Readout Rule", "body": "Any number that came from a live measurement renders in the mono face with tabular figures.", "section": "typography" },
+      { "name": "The No-Cast-Shadow Rule", "body": "Never add a plain dark box-shadow for elevation. On true black it does nothing. Depth is blur + translucent border + inset highlight, full stop.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep the palette to white + five grays + three status hues + the five-step grade scale. Nothing else.",
+      "Do pair every status color with an icon or text label; color alone never carries meaning.",
+      "Do use the mono face for any number sourced from a live measurement.",
+      "Do build depth with backdrop-filter blur + a translucent white border + an inset highlight. Never a plain dark box-shadow.",
+      "Do keep the accent to a single hue (white). Do not introduce a second brand color.",
+      "Do write a Critical ticket's UI the same calm way as a Minor one; the escalation is in the words and the color, not added visual noise."
+    ],
+    "donts": [
+      "Don't use gradient text, glow-outline neon, or any AI-slop tell not already in this system.",
+      "Don't add drop shadows for elevation; on true black they're invisible and just add render cost.",
+      "Don't introduce a second accent color. If something needs more visual weight, use opacity or size, not a new hue.",
+      "Don't leave .page-title (and anything else) referencing --font-display without defining that token outside the landing page's scope.",
+      "Don't ship the primary button's hover state without checking what --hue-accent: 0 actually renders as against a pure-white resting state.",
+      "Don't use a border-left/border-right colored stripe as a card accent; this system has no such pattern."
+    ]
+  }
+}
