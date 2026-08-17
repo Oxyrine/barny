@@ -10,6 +10,16 @@ import { runDiagnostics } from "./diagnostics.ts";
 import { getSelfHealSuggestion } from "./selfheal.ts";
 import { buildTicketPayload, submitTicket } from "./ticket.ts";
 
+process.on("uncaughtException", (err) => {
+  console.error("FATAL UNCAUGHT EXCEPTION:", err.stack || err);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("FATAL UNHANDLED REJECTION:", reason);
+  process.exit(1);
+});
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONFIG_PATH = path.join(__dirname, "..", "config.json");
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:4000";
@@ -59,6 +69,15 @@ prober.on("sample", async (state: ProbeState) => {
   if (fired && !runningDiag) {
     runningDiag = true;
     console.log("[agent] threshold fired — running diagnostics…");
+
+    // Snapshot the evidence that actually caused this breach before running diagnostics.
+    // runDiagnostics() takes 15-30s, during which the live probe loop keeps appending new
+    // samples to state.history — re-reading state.history/state.wifi after that await would
+    // evaluate self-heal rules and build the ticket against whatever the network looks like
+    // *now* (often healthy again by then), not the samples that triggered the breach.
+    const triggerSamples = state.history.slice(-20);
+    const triggerWifi = state.wifi;
+
     try {
       const diag = await runDiagnostics(BACKEND_URL);
       diagnosticHistory.unshift(diag);
@@ -66,10 +85,10 @@ prober.on("sample", async (state: ProbeState) => {
       broadcast("diagnostic", diag);
       console.log(`[agent] diag done — down ${diag.downstreamMbps.toFixed(1)} Mbps, up ${diag.upstreamMbps.toFixed(1)} Mbps, bufferbloat ${diag.bufferbloat.grade}`);
 
-      if (state.wifi) {
+      if (triggerWifi) {
         const suggestion = getSelfHealSuggestion({
-          recentSamples: state.history.slice(-20),
-          wifi: state.wifi,
+          recentSamples: triggerSamples,
+          wifi: triggerWifi,
           diagnostics: diag,
           config,
         });
@@ -77,9 +96,9 @@ prober.on("sample", async (state: ProbeState) => {
 
         const payload = buildTicketPayload(
           status,
-          state.history,
+          triggerSamples,
           diag,
-          state.wifi,
+          triggerWifi,
           suggestion,
           false,
         );

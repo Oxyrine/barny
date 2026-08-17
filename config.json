@@ -7,5 +7,5 @@
   },
   "probeIntervalIdleMs": 1000,
   "probeIntervalSuspectMs": 1000,
-  "triggerCooldownMs": 60000
+  "triggerCooldownMs": 300000
 }

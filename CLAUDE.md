@@ -97,4 +97,84 @@ rejected promise and discarding it was silently losing real hop data.
   counting `ThresholdTracker`'s consecutive-breach counter. Both fixed by computing status
   before broadcasting once, and having `/api/simulate` push a sample and emit "sample" through
   the single canonical handler instead of re-implementing it.
+- `agent/server.ts`: the "sample" handler read `state.history`/`state.wifi` *after*
+  `await runDiagnostics(...)` to build self-heal suggestions and the ticket. Diagnostics take
+  15-30s, and at this project's 1s probe interval that's enough time for the live probe loop to
+  push 15-30 new (often healthy-again) samples, pushing the actual breach evidence out of the
+  "last 20 samples" window before the ticket was ever built — self-heal rules and ticket
+  severity/summary were being evaluated against stale, usually-healthy data instead of what
+  triggered the breach. Fixed by snapshotting `state.history.slice(-20)` and `state.wifi`
+  *before* the `await`, and using that snapshot everywhere downstream. Verified via
+  `npm run simulate:degradation`: the resulting ticket's `probeHistory` now genuinely contains
+  the injected/breaching samples instead of unrelated later ones.
+- `scripts/simulate-degradation.ts`: `waitForPipeline()` took `history[0]` / `tickets[0]`
+  (newest-first) as "the" result of this run's injection, with no check that they were actually
+  *created after* the injection. On this machine's genuinely flaky phone-hotspot Wi-Fi, the real
+  probe loop can independently trip its own threshold breach around the same time — the script
+  would then report false success against an unrelated pre-existing ticket/diagnostic. Fixed by
+  capturing `injectedAt = Date.now()` right before the `POST /api/simulate` call and filtering
+  both the diagnostic-history and open-tickets lists to entries at or after that timestamp.
 
+## Open investigation — `/api/simulate` sometimes doesn't fire (unresolved, stopped mid-debug)
+`npm run simulate:degradation` is intermittent on this machine: sometimes it completes cleanly
+(confirmed working end-to-end at least 3 times this session, each producing a correct,
+non-stale ticket after the two fixes above), and sometimes it times out after 2 minutes with no
+new ticket/diagnostic ever appearing, even when manually confirmed that no diagnostic was
+`runningDiag` at the moment of injection.
+
+**What's confirmed so far** (via temporary debug logging in `agent/server.ts`'s `/api/simulate`
+route and `agent/threshold.ts`'s `record()`, since removed — not committed):
+- The injected synthetic sample hardcodes `dnsMs: 500` in `agent/server.ts`'s `/api/simulate`
+  handler, and `config.json`'s `thresholds.dnsMs` is `300`. Since `dnsBad = sample.dnsMs > 300`
+  depends only on the *current* sample (not a rolling window), **`breach` is true on literally
+  the very first injected sample, every time** — the "8 samples for 3-consecutive-latency"
+  framing in the script's comment is misleading; the real trigger condition is satisfied
+  immediately via DNS alone. This was confirmed directly via debug logs on a run that worked.
+- Because `breach` is reliably true immediately, the only thing that can make `fired` false is
+  `ThresholdTracker`'s cooldown gate (`triggerCooldownMs: 60000`, keyed off `lastFiredAt`) or
+  `runningDiag` already being `true` from an unrelated in-flight diagnostic.
+- **Leading hypothesis, not yet confirmed**: `lastFiredAt` is set at *fire time*, but tickets
+  are created at *diagnostic-completion time* (`createdAt` is stamped after `await
+  runDiagnostics(...)`, which itself can take 15-45s — `runTraceroute()` alone can take up to
+  ~45s in the worst case on this network, see the traceroute note above). Several manual
+  verification attempts this session computed "wait N seconds since the last ticket's
+  `createdAt`" and still hit the failure — which contradicts a simple constant-offset version of
+  this hypothesis, so either the offset varies more than expected, or something else is also
+  contributing. This was not resolved before work was stopped.
+- Ruled out: it is **not** a script-vs-curl difference (identical JSON bodies via `curl` and via
+  the script's `fetch` both reproduced both outcomes across multiple trials); it is **not** the
+  double-counting/stale-window bugs already fixed above (both confirmed fixed independently);
+  a `runningDiag`-in-flight collision was explicitly checked and ruled out for at least one
+  failure (confirmed idle via `/api/state` and agent log inspection immediately before
+  injecting, and it still failed).
+
+**Next steps to resume this investigation:**
+1. Re-add the temporary debug logging (or equivalent) to `agent/threshold.ts`'s `record()` —
+   print `breach`, `fired`, `lastFiredAt`, and `now - lastFiredAt` on every call where
+   `breach === true` — and to `/api/simulate` in `agent/server.ts`. It was removed before commit
+   since it's noisy, not because it wasn't useful; the removed version is in this session's
+   history if wanted verbatim, but it's simple enough to redo in a couple of minutes.
+2. Reproduce a failure with that logging active and read the exact `cooldownRemaining` value at
+   the moment of the failed injection — this single number will confirm or rule out the cooldown
+   hypothesis directly, which no amount of external timestamp arithmetic fully settled.
+3. If it *is* cooldown: decide whether `triggerCooldownMs` should be measured from fire time (current)
+   or completion time, and/or whether `/api/simulate` should bypass cooldown entirely (it's an
+   explicit, deliberate demo trigger, not organic traffic — arguably it should never be
+   silently no-op'd by cooldown state left over from unrelated real jitter). The simplest fix
+   is likely: have `/api/simulate` reset `threshold`'s cooldown (`lastFiredAt = null`) before
+   injecting, since a demo operator triggering it explicitly has already decided they want a run
+   regardless of recent natural activity.
+4. If it *isn't* cooldown: re-check `runningDiag` timing more carefully — specifically whether a
+   *natural* breach can fire and set `runningDiag = true` in the gap between the script's
+   `checkAlive`/state-print calls and its `POST /api/simulate` call (a few hundred ms to ~1-2s),
+   given this network's real jitter is frequent enough that this narrow window might not be as
+   safe as it looks.
+5. Either way, add a `node --test` covering whatever the root cause turns out to be — this
+   class of bug (timing/state interaction between real and simulated triggers) has no coverage
+   right now.
+
+This is a demo-reliability issue on this specific flaky test network, not a data-correctness bug
+— when the pipeline *does* fire (confirmed clean multiple times), the resulting tickets are
+correct. A more stable Wi-Fi connection on the actual event demo machine would very likely
+reduce how often this is hit, but it should still be root-caused and fixed properly before
+relying on `npm run simulate:degradation` live in front of judges.

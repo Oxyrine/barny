@@ -27,7 +27,12 @@ async function checkAlive(url: string, name: string): Promise<boolean> {
   }
 }
 
-async function waitForPipeline(): Promise<{ ticketId: string | null; diagFound: boolean }> {
+// injectedAt guards against reporting a pre-existing diagnostic run or ticket as this
+// script's own result — on a real (especially flaky) network the live probe loop can
+// independently trigger its own breach around the same time, and grabbing "the first open
+// ticket" or "the newest diagnostic" without checking its timestamp would silently report
+// success against unrelated evidence instead of what was actually just injected.
+async function waitForPipeline(injectedAt: number): Promise<{ ticketId: string | null; diagFound: boolean }> {
   const deadline = Date.now() + 120_000; // 2-minute timeout
   let diagFound = false;
   let ticketId: string | null = null;
@@ -37,9 +42,9 @@ async function waitForPipeline(): Promise<{ ticketId: string | null; diagFound: 
 
     // Check diagnostic history on the agent
     try {
-      const history = (await fetch(`${AGENT}/api/history`).then((r) => r.json())) as unknown[];
-      if (history.length > 0 && !diagFound) {
-        const d = history[0] as any;
+      const history = (await fetch(`${AGENT}/api/history`).then((r) => r.json())) as any[];
+      const d = history.find((h) => h.timestamp >= injectedAt);
+      if (d && !diagFound) {
         console.log(
           `\n${CYAN("[diag]")}     down ${d.downstreamMbps.toFixed(1)} Mbps, up ${d.upstreamMbps.toFixed(1)} Mbps, ` +
             `bufferbloat ${d.bufferbloat.grade}, traceroute ${d.traceroute.length} hop(s)`,
@@ -48,11 +53,11 @@ async function waitForPipeline(): Promise<{ ticketId: string | null; diagFound: 
       }
     } catch {}
 
-    // Check for new tickets on the backend
+    // Check for new tickets on the backend — only ones created after injection
     try {
       const tickets = (await fetch(`${BACKEND}/tickets?status=open`).then((r) => r.json())) as any[];
-      if (tickets.length > 0 && !ticketId) {
-        const t = tickets[0];
+      const t = tickets.find((x) => x.createdAt >= injectedAt);
+      if (t && !ticketId) {
         ticketId = t.id;
         const color = t.severity === "Critical" ? RED : t.severity === "Degraded" ? YELLOW : GREEN;
         console.log(`${CYAN("[ticket]")}   POSTed → id ${BOLD(t.id)}, severity ${color(t.severity)}, status ${t.status}`);
@@ -103,6 +108,7 @@ async function main() {
   const INJECT_COUNT = 8;
   console.log(`${CYAN("[simulate]")} injecting ${INJECT_COUNT} degraded samples (latency 380ms, packetLoss: true)…`);
 
+  const injectedAt = Date.now();
   const injRes = await fetch(`${AGENT}/api/simulate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -119,7 +125,7 @@ async function main() {
 
   // Wait for the full pipeline to complete
   console.log(DIM("waiting for pipeline… (diagnostics + ticket, up to 2 minutes)"));
-  const { diagFound, ticketId } = await waitForPipeline();
+  const { diagFound, ticketId } = await waitForPipeline(injectedAt);
 
   // Final summary
   console.log();
