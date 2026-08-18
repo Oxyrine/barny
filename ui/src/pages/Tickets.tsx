@@ -1,22 +1,7 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { useAppContext } from "../App.tsx";
+import { BACKEND_URL as BACKEND } from "../config.ts";
 import type { TicketPayload } from "../../../shared/types.ts";
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 }
-  }
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
-};
-
-const BACKEND = "http://localhost:4000";
 
 function formatDate(ts: number) {
   return new Date(ts).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -141,8 +126,8 @@ export default function Tickets() {
 
   return (
     <>
-      <motion.div className="stack" variants={containerVariants} initial="hidden" animate="show">
-        <motion.div className="row-between" variants={itemVariants}>
+      <div className="stack">
+        <div className="row-between">
           <div>
             <h1 className="page-title">Tickets</h1>
             <p className="page-subtitle">{backendTickets.length} ticket(s) in the ISP backend</p>
@@ -154,7 +139,7 @@ export default function Tickets() {
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
               style={{
-                background: "hsla(0,0%,100%,0.05)", border: "1px solid var(--c-border)", backdropFilter: "blur(12px)",
+                background: "var(--c-glass)", border: "1px solid var(--c-border)", backdropFilter: "blur(12px)",
                 color: "var(--c-text)", borderRadius: "var(--r-sm)", padding: "var(--sp-1) var(--sp-3)",
                 fontSize: "0.875rem", outline: "none"
               }}
@@ -165,9 +150,9 @@ export default function Tickets() {
               <option value="resolved" style={{ background: "#0a0a0a" }}>Resolved</option>
             </select>
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div className="card" style={{ padding: 0, overflow: "hidden" }} variants={itemVariants}>
+        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
           {backendTickets.length === 0 ? (
             <div className="empty-state">
               <span className="empty-icon" aria-hidden="true">🎫</span>
@@ -217,8 +202,8 @@ export default function Tickets() {
               </table>
             </div>
           )}
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {selected && <SlideOver ticket={selected} onClose={() => setSelected(null)} />}
     </>

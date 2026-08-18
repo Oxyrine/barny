@@ -1,21 +1,6 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { BACKEND_URL as BACKEND } from "../config.ts";
 import type { TicketPayload, TicketSeverity } from "../../../shared/types.ts";
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 }
-  }
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
-};
-
-const BACKEND = "http://localhost:4000";
 
 interface QueuedTicket extends TicketPayload {
   severity: TicketSeverity;
@@ -77,8 +62,8 @@ export default function ISPAgentView() {
   const minor     = queue.filter((t) => t.severity === "Minor");
 
   return (
-    <motion.div className="stack" variants={containerVariants} initial="hidden" animate="show">
-      <motion.div className="row-between" variants={itemVariants}>
+    <div className="stack">
+      <div className="row-between">
         <div>
           <h1 className="page-title">ISP Agent View</h1>
           <p className="page-subtitle">
@@ -97,11 +82,11 @@ export default function ISPAgentView() {
           </label>
           <button id="isp-refresh-btn" className="btn btn-ghost btn-sm" onClick={refresh}>↻ Refresh</button>
         </div>
-      </motion.div>
+      </div>
 
       {/* Churn risk summary */}
       {churnRisk.length > 0 && (
-        <motion.div className="card" style={{ borderColor: "hsla(0, 80%, 58%, 0.3)", background: "hsla(0, 80%, 58%, 0.1)" }} variants={itemVariants}>
+        <div className="card" style={{ borderColor: "color-mix(in srgb, var(--c-critical) 30%, transparent)", background: "color-mix(in srgb, var(--c-critical) 10%, transparent)" }}>
           <div className="row" style={{ gap: "var(--sp-3)", marginBottom: "var(--sp-3)" }}>
             <span style={{ color: "var(--c-critical)", fontSize: "1rem" }} aria-hidden="true">🔴</span>
             <h2 className="section-title" style={{ color: "var(--c-critical)" }}>
@@ -123,20 +108,20 @@ export default function ISPAgentView() {
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* Stats row */}
-      <motion.div className="grid-3" variants={itemVariants}>
-        <div className="card" style={{ borderColor: critical.length > 0 ? "hsla(0, 80%, 58%, 0.4)" : undefined }}>
+      <div className="grid-3">
+        <div className="card" style={{ borderColor: critical.length > 0 ? "color-mix(in srgb, var(--c-critical) 40%, transparent)" : undefined }}>
           <div className="card-title">Critical</div>
-          <div className="card-value" style={{ color: critical.length > 0 ? "var(--c-critical)" : "var(--c-text-dim)", textShadow: critical.length > 0 ? "0 0 20px hsla(0,80%,58%,0.3)" : undefined }}>
+          <div className="card-value" style={{ color: critical.length > 0 ? "var(--c-critical)" : "var(--c-text-dim)", textShadow: critical.length > 0 ? "0 0 20px color-mix(in srgb, var(--c-critical) 30%, transparent)" : undefined }}>
             {critical.length}
           </div>
         </div>
-        <div className="card" style={{ borderColor: degraded.length > 0 ? "hsla(40, 90%, 58%, 0.4)" : undefined }}>
+        <div className="card" style={{ borderColor: degraded.length > 0 ? "color-mix(in srgb, var(--c-degraded) 40%, transparent)" : undefined }}>
           <div className="card-title">Degraded</div>
-          <div className="card-value" style={{ color: degraded.length > 0 ? "var(--c-degraded)" : "var(--c-text-dim)", textShadow: degraded.length > 0 ? "0 0 20px hsla(40,90%,58%,0.3)" : undefined }}>
+          <div className="card-value" style={{ color: degraded.length > 0 ? "var(--c-degraded)" : "var(--c-text-dim)", textShadow: degraded.length > 0 ? "0 0 20px color-mix(in srgb, var(--c-degraded) 30%, transparent)" : undefined }}>
             {degraded.length}
           </div>
         </div>
@@ -144,10 +129,10 @@ export default function ISPAgentView() {
           <div className="card-title">Minor</div>
           <div className="card-value" style={{ color: "var(--c-text-dim)" }}>{minor.length}</div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Prioritized queue table */}
-      <motion.div className="card" style={{ padding: 0, overflow: "hidden" }} variants={itemVariants}>
+      <div className="card" style={{ padding: 0, overflow: "hidden" }}>
         <div style={{ padding: "var(--sp-5) var(--sp-6) var(--sp-4)" }} className="row-between">
           <h2 className="section-title">Ticket Queue</h2>
           {error && (
@@ -212,7 +197,7 @@ export default function ISPAgentView() {
             </table>
           </div>
         )}
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
