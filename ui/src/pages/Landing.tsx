@@ -95,17 +95,20 @@ export default function Landing() {
       </div>
 
       <div className="page">
-        {/* Header */}
-        <header className="header anim" style={{ "--d": "0s" } as React.CSSProperties}>
+        <nav className="nav desktop-only anim" role="navigation" aria-label="Main navigation" style={{ "--d": "0s" } as React.CSSProperties}>
+          <Link to="/" className="nav-brand" aria-label="NetWatch home">
+            <span className="logo-icon" aria-hidden="true">📡</span>
+            <span className="logo-text">NetWatch</span>
+          </Link>
 
-          <nav className="nav-pill desktop-only">
-            <Link to="/" className="active">Home</Link>
-            <Link to="/dashboard/tickets">Tickets</Link>
-            <Link to="/dashboard/history">History</Link>
-            <Link to="/dashboard/isp">ISP View</Link>
-          </nav>
-          
-          <Link to="/dashboard" className="btn-signin desktop-only">Dashboard</Link>
+          <ul className="nav-links" role="list">
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/dashboard/tickets">Tickets</Link></li>
+            <li><Link to="/dashboard/history">History</Link></li>
+            <li><Link to="/dashboard/isp">ISP View</Link></li>
+          </ul>
+
+          <Link to="/dashboard" className="btn-signin" style={{ marginLeft: "auto", textDecoration: "none" }}>Dashboard</Link>
 
           <button 
             className="burger mobile-only" 
@@ -116,6 +119,7 @@ export default function Landing() {
             <span></span>
             <span></span>
           </button>
+        </nav>
         </header>
 
         {/* Hero */}
